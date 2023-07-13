@@ -1,8 +1,17 @@
 package jm.task.core.jdbc.util;
 
+import jm.task.core.jdbc.model.User;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.service.ServiceRegistry;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +35,31 @@ public class Util implements AutoCloseable {
         }
         return connection;
     }
+
+    public static Properties getProperties() {
+        Properties settings = new Properties();
+        settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
+        settings.put(Environment.URL, "jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC");
+        settings.put(Environment.USER, DB_USER);
+        settings.put(Environment.PASS, DB_PASS);
+        settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL8Dialect");
+        settings.put(Environment.SHOW_SQL, "true");
+        settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
+        settings.put(Environment.HBM2DDL_AUTO, "");
+        return settings;
+    }
+
+    public static Session getSession(Properties prop) {
+        Configuration configuration = new Configuration();
+        configuration.setProperties(prop);
+        configuration.addAnnotatedClass(User.class);
+        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                .applySettings(configuration.getProperties()).build();
+        SessionFactory sessionFactory = configuration.addProperties(prop).buildSessionFactory(serviceRegistry);
+        return sessionFactory.openSession();
+    }
+
+
 
     @Override
     public void close() {
