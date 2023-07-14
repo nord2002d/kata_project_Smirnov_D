@@ -4,8 +4,8 @@ import jm.task.core.jdbc.model.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 
 import java.sql.Connection;
@@ -38,14 +38,14 @@ public class Util implements AutoCloseable {
 
     public static Properties getProperties() {
         Properties settings = new Properties();
-        settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
-        settings.put(Environment.URL, "jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC");
-        settings.put(Environment.USER, DB_USER);
-        settings.put(Environment.PASS, DB_PASS);
-        settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL8Dialect");
-        settings.put(Environment.SHOW_SQL, "true");
-        settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
-        settings.put(Environment.HBM2DDL_AUTO, "");
+        settings.put(AvailableSettings.DRIVER, "com.mysql.cj.jdbc.Driver");
+        settings.put(AvailableSettings.URL, "jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC");
+        settings.put(AvailableSettings.USER, DB_USER);
+        settings.put(AvailableSettings.PASS, DB_PASS);
+        settings.put(AvailableSettings.DIALECT, "org.hibernate.dialect.MySQL8Dialect");
+        settings.put(AvailableSettings.SHOW_SQL, "true");
+        settings.put(AvailableSettings.CURRENT_SESSION_CONTEXT_CLASS, "thread");
+        settings.put(AvailableSettings.HBM2DDL_AUTO, "");
         return settings;
     }
 
@@ -58,8 +58,6 @@ public class Util implements AutoCloseable {
         SessionFactory sessionFactory = configuration.addProperties(prop).buildSessionFactory(serviceRegistry);
         return sessionFactory.openSession();
     }
-
-
 
     @Override
     public void close() {

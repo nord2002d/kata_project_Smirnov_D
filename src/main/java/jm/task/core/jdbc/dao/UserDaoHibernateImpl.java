@@ -3,11 +3,14 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 public class UserDaoHibernateImpl implements UserDao {
+    private static final Logger LOGGER = Logger.getLogger(UserDaoHibernateImpl.class.getName());
 
 
     @Override
@@ -20,7 +23,7 @@ public class UserDaoHibernateImpl implements UserDao {
                 "last_name TINYTEXT NOT NULL, " +
                 "age INT NOT NULL, " +
                 "PRIMARY KEY(id))";
-        Query query = session.createSQLQuery(sql).addEntity(User.class);
+        Query<? extends User> query = session.createSQLQuery(sql).addEntity(User.class);
         query.executeUpdate();
         session.getTransaction().commit();
         session.close();
@@ -31,7 +34,7 @@ public class UserDaoHibernateImpl implements UserDao {
         Session session = Util.getSession(Util.getProperties());
         session.beginTransaction();
         String sql = "DROP TABLE IF EXISTS users";
-        Query query = session.createSQLQuery(sql).addEntity(User.class);
+        Query<? extends User> query = session.createSQLQuery(sql).addEntity(User.class);
         query.executeUpdate();
         session.getTransaction().commit();
         session.close();
@@ -39,23 +42,25 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        Session session = Util.getSession(Util.getProperties());
-        session.beginTransaction();
-        User user = new User(name,lastName,age);
-        session.save(user);
-        session.getTransaction().commit();
-        session.close();
+        try (Session session = Util.getSession(Util.getProperties())) {
+            Transaction transaction = session.beginTransaction();
+            User user = new User(name,lastName,age);
+            session.save(user);
+            transaction.commit();
+            String formatMessage = String.format("*** User with name %s add in Data Base ***", name);
+            LOGGER.info(formatMessage);
+        }
     }
 
     @Override
     public void removeUserById(long id) {
-        Session session = Util.getSession(Util.getProperties());
-        session.beginTransaction();
-        User user = new User();
-        user.setId(id);
-        session.remove(user);
-        session.getTransaction().commit();
-        session.close();
+        try (Session session = Util.getSession(Util.getProperties())) {
+            Transaction transaction = session.beginTransaction();
+            User user = new User();
+            user.setId(id);
+            session.remove(user);
+            transaction.commit();
+        }
     }
 
     @Override
@@ -68,6 +73,13 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
+        Session session = Util.getSession(Util.getProperties());
+        session.beginTransaction();
+        String sql = "DELETE FROM users";
+        Query<? extends User> query = session.createSQLQuery(sql).addEntity(User.class);
+        query.executeUpdate();
+        session.getTransaction().commit();
+        session.close();
 
     }
 }
